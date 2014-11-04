@@ -1,0 +1,59 @@
+## 创建节点 ##
+**说明:**
+*zkCli.sh显示的密码是加密后的，而addauth需要是加密前的*
+```
+格式:create [-s] [-e] path data acl
+    其中"-s"表示创建一个"有序"节点,"-e"表示创建一个临时节点.默认为持久性节点
+
+[zk: localhost:2181(CONNECTED) 0] create /zz "ddd" digest:admin:x1nq8J5GOJVPY6zgzhtTtA9izLc=:rwcda
+Created /zz
+```
+```
+ 创建一个path为"/test"的节点,值为"null",ACL授权方式为"digest",其中授权的用户名:密码为"admin:x1nq8J5GOJVPY6zgzhtTtA9izLc=",ACL的权限列表为"r""w""c""d""a".
+ "digest"授权方式表示client方位此节点数据,需要指定用户名和密码,可以参考zookeeper中DigestAuthenticationProvider.generateDigest(String ipName)方法;通过向此方法指定原始的用户名和密码即可获得"digest"之后的字符串,比如传入"admin:admin",将会得到"admin:x1nq8J5GOJVPY6zgzhtTtA9izLc=",其内部原理是将"密码"部分进行MD5 + sha1操作.再zkCli.sh指令上你需要传递digest之后的字符串.
+ 其中ACL的授权方式有很多种,你可以在ZooDefs类中找到更多的信息.
+ 最后一个参数为权限列表,r表示"read",w表示"write",c表示"create",d表示"delete",a表示"admin"
+```
+
+**查看节点的acl信息,包括用户名,密码,权限**
+```
+[zk: localhost:2181(CONNECTED) 3] getAcl /zz
+'digest,'admin:x1nq8J5GOJVPY6zgzhtTtA9izLc=
+: cdrwa
+```
+
+**设置ACL**
+```
+格式: setAcl path acl
+	setAcl /zz "ddd" digest:admin:x1nq8J5GOJVPY6zgzhtTtA9izLc=:rwcda
+```
+
+**添加认证,查询节点数据**
+```
+[zk: localhost:2181(CONNECTED) 1] addauth digest admin:admin
+[zk: localhost:2181(CONNECTED) 2] get /zz
+"ddd"
+cZxid = 0x1008b978b
+ctime = Tue Nov 04 16:18:35 CST 2014
+mZxid = 0x1008b978b
+mtime = Tue Nov 04 16:18:35 CST 2014
+pZxid = 0x1008b978b
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 5
+numChildren = 0
+```
+
+** 生成密码 **
+```
+>>> from kazoo.client import KazooClient,KazooState
+>>> zk = KazooClient(hosts='127.0.0.1')
+>>> zk.start()
+>>> import kazoo
+>>> kazoo.security.make_digest_acl_credential("admin","admin")
+u'admin:x1nq8J5GOJVPY6zgzhtTtA9izLc='
+>>> kazoo.security.make_digest_acl_credential("xx","xx")
+u'xx:xXNSNhK5zxx'
+```

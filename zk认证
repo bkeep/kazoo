@@ -57,3 +57,8 @@ u'admin:x1nq8J5GOJVPY6zgzhtTtA9izLc='
 >>> kazoo.security.make_digest_acl_credential("xx","xx")
 u'xx:xXNSNhK5zxx'
 ```
+读取zk中加密的数据
+>>> zk.add_auth("digest","admin:admin")
+True
+>>> zk.get("/zz")               
+("'jjj'", ZnodeStat(czxid=8589937433, mzxid=8589937433, ctime=1417337094413, mtime=1417337094413, version=0, cversion=0, aversion=0, ephemeralOwner=0, dataLength=5, numChildren=0, pzxid=8589937433))
